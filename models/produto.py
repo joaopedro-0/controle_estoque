@@ -18,6 +18,7 @@ def criar_tabela_produto():
     conexao.commit()
     conexao.close()
 
+
 class Produto:
     def __init__(self, nome, quantidade, preco, preco_custo, codigo):
         if quantidade < 0 or preco < 0 or preco_custo < 0:
@@ -78,6 +79,7 @@ class Produto:
 
         conexao.commit()
         conexao.close()
+
 
     @staticmethod
     def buscar_produto(codigo):
