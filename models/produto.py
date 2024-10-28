@@ -1,12 +1,32 @@
+import sqlite3
+
+def criar_tabela_produto():
+    conexao = sqlite3.connect("controle_estoque.db")
+    cursor = conexao.cursor()
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS produto (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        quantidade INTEGER NOT NULL,
+        preco REAL NOT NULL,
+        preco_custo REAL NOT NULL,
+        codigo TEXT NOT NULL
+        )
+        ''')
+
+    conexao.commit()
+    conexao.close()
+
 class Produto:
-    def __init__(self, nome, quantidade, preco, preco_custo, id, codigo):
+    def __init__(self, nome, quantidade, preco, preco_custo, codigo):
         if quantidade < 0 or preco < 0 or preco_custo < 0:
             raise ValueError("Quantidade e preços não podem ser negativos.")
         self.nome = nome
         self.quantidade = quantidade
         self.preco = preco
         self.preco_custo = preco_custo
-        self.id = id
+        self.id = None #ID será gerado pelo banco de dados
         self.codigo = codigo
 
     def adicionar_estoque(self, quantidade_adicional):
@@ -14,13 +34,19 @@ class Produto:
             raise ValueError("A quantidade adicional não pode ser negativa.")
         self.quantidade += quantidade_adicional
 
+        conexao = sqlite3.connect("controle_estoque.db")
+        cursor = conexao.cursor()
+        cursor.execute('''
+        UPDATE produto SET quantidade = ? WHERE codigo = ?''',(self.quantidade, self.codigo))
+
+        conexao.commit()
+        conexao.close()
+
     def atualizar_precos(self, novo_preco, novo_preco_custo):
         if novo_preco < 0 or novo_preco_custo < 0:
             raise ValueError("Os preços não podem ser negativos.")
         self.preco = novo_preco
         self.preco_custo = novo_preco_custo
-    def atualizar_quantidade(self, nova_quantidade):
-        self.quantidade = nova_quantidade
 
     def calcular_markup(self):
         return (self.preco - self.preco_custo) / self.preco_custo if self.preco_custo else 0
@@ -38,3 +64,28 @@ class Produto:
                 f"Markup: {self.calcular_markup():.2f}, "
                 f"Lucro: {self.calcular_lucro():.2f} ")
 
+    def inserir_produto(self):
+        #Conectar
+        conexao = sqlite3.connect("controle_estoque.db")
+        cursor = conexao.cursor()
+        #Inserir
+        cursor.execute('''
+        INSERT INTO produto (nome, quantidade, preco, preco_custo, codigo)
+        VALUES  (?, ?, ?, ?, ?)
+        ''', (self.nome, self.quantidade, self.preco, self.preco_custo, self.codigo))
+        #Pegar o ID gerado automaticamente
+        self.id= cursor.lastrowid
+
+        conexao.commit()
+        conexao.close()
+
+    @staticmethod
+    def buscar_produto(codigo):
+        conexao = sqlite3.connect("controle_estoque.db")
+        cursor = conexao.cursor()
+
+        cursor.execute('''SELECT * FROM produto WHERE codigo = ?''', (codigo,))
+
+        produto = cursor.fetchone()
+        conexao.close()
+        return produto
