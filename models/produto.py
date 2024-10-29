@@ -1,4 +1,5 @@
 import sqlite3
+
 class Produto:
     def __init__(self, nome, quantidade, preco, preco_custo, codigo):
         if quantidade < 0 or preco < 0 or preco_custo < 0:
@@ -9,6 +10,25 @@ class Produto:
         self.preco_custo = preco_custo
         self.id = None #ID será gerado pelo banco de dados
         self.codigo = codigo
+        self.criar_tabela_produto()
+
+    def criar_tabela_produto(self):
+        conexao = sqlite3.connect("controle_estoque.db")
+        cursor = conexao.cursor()
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS produto (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            quantidade INTEGER NOT NULL,
+            preco REAL NOT NULL,
+            preco_custo REAL NOT NULL,
+            codigo TEXT NOT NULL
+            )
+            ''')
+
+        conexao.commit()
+        conexao.close()
 
     def adicionar_estoque(self, quantidade_adicional):
         if quantidade_adicional < 0:
@@ -60,6 +80,8 @@ class Produto:
         conexao.commit()
         conexao.close()
 
+
+    @staticmethod
     def buscar_produto(codigo):
         conexao = sqlite3.connect("controle_estoque.db")
         cursor = conexao.cursor()
@@ -69,3 +91,15 @@ class Produto:
         produto = cursor.fetchone()
         conexao.close()
         return produto
+
+    @staticmethod
+    def listar_produtos():
+        conexao = sqlite3.connect("controle_estoque.db")
+        cursor = conexao.cursor()
+
+        cursor.execute("SELECT * FROM produto")
+        produtos = cursor.fetchall()
+
+        conexao.close()
+        return produtos
+
