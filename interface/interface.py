@@ -4,6 +4,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox, Toplevel, ttk
+import tkinter as tk
+from tkinter import messagebox
 from models.produto import Produto
 
 def salvar_produto():
